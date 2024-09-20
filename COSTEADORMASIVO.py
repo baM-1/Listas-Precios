@@ -1,25 +1,40 @@
 import pandas as pd
 
 # Variables globales
-tipo_cambio = 20      # Tipo de cambio USD a moneda local
+tipo_cambio = 22      # Tipo de cambio USD a moneda local
 porcentaje_costos_indirectos = 40  # Porcentaje de costos indirectos
 margen_utilidad = 30               # Porcentaje de margen de utilidad deseado
+margen_utilidad_alto = 40          # Porcentaje de margen de utilidad alto
+margen_utilidad_bajo = 20          # Porcentaje de margen de utilidad bajo
+
 precios_resina_usd = {
-    'PET': 1.50,      # Precio en USD/kg
-    'PP': 1.30        # Precio en USD/kg
+    'PET': 1.69,      # Precio en USD/kg
+    'PP': 1.70        # Precio en USD/kg
 }
 
 # Leer el archivo de Excel
 df_productos = pd.read_excel('/Users/bam/Documents/WorkWork/GrupoLaser/Dir_Gen/A_Comercial/Listas_Precios/LS_BASE.xlsx', sheet_name='Productos')
 
+# Asegurarnos de que 'Peso Neto (g)' es numérico
+df_productos['Peso Neto (g)'] = pd.to_numeric(df_productos['Peso Neto (g)'], errors='coerce')
+
+# Verificar si hay valores NaN
+print(df_productos[df_productos['Peso Neto (g)'].isna()])
+
+# Función para calcular costos y precios
 def calcular_costo_y_precio(row):
     # Obtener valores de la fila
     peso_neto = row['Peso Neto (g)']
     resina = row['Resina']
     precio_pigmento_usd = row['Precio Pigmento USD/kg']
     porcentaje_pigmento = row['Porcentaje Pigmento (%)']
-    porcentaje_merma = row.get('Porcentaje Merma (%)', 4)  # Si no está, usamos 4%
     precio_resina_usd = row.get('Precio Resina USD/kg', precios_resina_usd[resina])
+
+    # Aplicar la merma del 4% solo si hay pigmento
+    if porcentaje_pigmento > 0:
+        porcentaje_merma = 4
+    else:
+        porcentaje_merma = 0
     
     # Paso 1: Peso ajustado por merma
     peso_ajustado = peso_neto * (1 + porcentaje_merma / 100)
@@ -44,18 +59,23 @@ def calcular_costo_y_precio(row):
     # Costo total incluyendo costos indirectos
     costo_total = costo_materiales / (1 - porcentaje_costos_indirectos / 100)
     
-    # Precio de venta con margen de utilidad
-    precio_venta = costo_total * (1 + margen_utilidad / 100)
+    # Precios de venta con diferentes márgenes de utilidad
+    precio_venta_20 = costo_total * (1 + margen_utilidad_bajo / 100)
+    precio_venta_30 = costo_total * (1 + margen_utilidad / 100)
+    precio_venta_40 = costo_total * (1 + margen_utilidad_alto / 100)
     
     # Resultados detallados
     resultado = {
         'CODIGO SAE': row['CODIGO SAE'],
         'DESCRIPCION': row['DESCRIPCION'],
+        'Peso Neto (g)': peso_neto,
         'Costo Resina': costo_resina,
         'Costo Pigmento': costo_pigmento,
         'Costo Materiales': costo_materiales,
         'Costo Total': costo_total,
-        'Precio Venta': precio_venta
+        'Precio Venta (30%)': precio_venta_30,
+        'Precio Venta (20%)': precio_venta_20,
+        'Precio Venta (40%)': precio_venta_40
     }
     
     return resultado
