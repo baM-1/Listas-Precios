@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Variables globales
-tipo_cambio = 22      # Tipo de cambio USD a moneda local
+tipo_cambio = 22                   # Tipo de cambio USD a moneda local
 porcentaje_costos_indirectos = 40  # Porcentaje de costos indirectos
 margen_utilidad = 30               # Porcentaje de margen de utilidad deseado
 margen_utilidad_alto = 40          # Porcentaje de margen de utilidad alto
@@ -30,18 +30,15 @@ def calcular_costo_y_precio(row):
     porcentaje_pigmento = row['Porcentaje Pigmento (%)']
     precio_resina_usd = row.get('Precio Resina USD/kg', precios_resina_usd[resina])
 
-    # Aplicar la merma del 4% solo si hay pigmento
+    # Usar la merma del 4% solo si hay pigmento, si no, usar el peso neto directamente
     if porcentaje_pigmento > 0:
-        porcentaje_merma = 4
+        peso_ajustado = peso_neto * (1 + 4 / 100)  # Aplicar merma del 4%
     else:
-        porcentaje_merma = 0
-    
-    # Paso 1: Peso ajustado por merma
-    peso_ajustado = peso_neto * (1 + porcentaje_merma / 100)
+        peso_ajustado = peso_neto * (1 + 2 / 100) # Usar el peso neto sin ajuste si no hay pigmento
     
     # Paso 2: Peso de pigmento y resina
-    peso_pigmento = peso_ajustado * (porcentaje_pigmento / 100)
-    peso_resina = peso_ajustado - peso_pigmento
+    peso_pigmento = peso_ajustado * (porcentaje_pigmento) #  / 100 <<-- eso dentro de parentesis
+    peso_resina = peso_neto if porcentaje_pigmento == 0 else peso_ajustado - peso_pigmento  # Usar peso neto si no hay pigmento
     
     # Convertir pesos a kilogramos
     peso_resina_kg = peso_resina / 1000
@@ -60,9 +57,9 @@ def calcular_costo_y_precio(row):
     costo_total = costo_materiales / (1 - porcentaje_costos_indirectos / 100)
     
     # Precios de venta con diferentes márgenes de utilidad
-    precio_venta_20 = costo_total * (1 + margen_utilidad_bajo / 100)
-    precio_venta_30 = costo_total * (1 + margen_utilidad / 100)
-    precio_venta_40 = costo_total * (1 + margen_utilidad_alto / 100)
+    precio_venta_20 = costo_total / (1 - (margen_utilidad_bajo / 100))
+    precio_venta_30 = costo_total / (1 - (margen_utilidad / 100))
+    precio_venta_40 = costo_total / (1 - (margen_utilidad_alto / 100))
     
     # Resultados detallados
     resultado = {
