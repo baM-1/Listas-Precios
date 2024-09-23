@@ -30,15 +30,25 @@ def calcular_costo_y_precio(row):
     porcentaje_pigmento = row['Porcentaje Pigmento (%)']
     precio_resina_usd = row.get('Precio Resina USD/kg', precios_resina_usd[resina])
 
-    # Usar la merma del 4% solo si hay pigmento, si no, usar el peso neto directamente
+    # Usar la merma del 4% si hay pigmento, o el 2% si no hay pigmento
     if porcentaje_pigmento > 0:
-        peso_ajustado = peso_neto * (1 + 4 / 100)  # Aplicar merma del 4%
+        peso_ajustado = peso_neto * (1 + 4 / 100)  # Aplicar merma del 4% si hay pigmento
     else:
-        peso_ajustado = peso_neto * (1 + 2 / 100) # Usar el peso neto sin ajuste si no hay pigmento
+        peso_ajustado = peso_neto * (1 + 2 / 100)  # Aplicar merma del 2% si no hay pigmento
+
+    # Paso 2: Peso de pigmento y resina
+    peso_pigmento = peso_ajustado * (porcentaje_pigmento / 100)  # Corregir el cálculo del porcentaje de pigmento
+    peso_resina = peso_ajustado - peso_pigmento  # Calcular peso de la resina ajustado
+
+    # Usar la merma del 4% solo si hay pigmento, si no, usar el peso neto directamente
+    #if porcentaje_pigmento > 0:
+     #   peso_ajustado = peso_neto * (1 + 4 / 100)  # Aplicar merma del 4%
+    #else:
+     #   peso_ajustado = peso_neto * (1 + 2 / 100) # Usar el peso neto sin ajuste si no hay pigmento + el 2% de merma de material
     
     # Paso 2: Peso de pigmento y resina
-    peso_pigmento = peso_ajustado * (porcentaje_pigmento) #  / 100 <<-- eso dentro de parentesis
-    peso_resina = peso_neto if porcentaje_pigmento == 0 else peso_ajustado - peso_pigmento  # Usar peso neto si no hay pigmento
+    #peso_pigmento = peso_ajustado * (porcentaje_pigmento) #  / 100 <<-- eso dentro de parentesis
+    #peso_resina = peso_neto if porcentaje_pigmento == 0 else peso_ajustado - peso_pigmento  # Usar peso neto si no hay pigmento
     
     # Convertir pesos a kilogramos
     peso_resina_kg = peso_resina / 1000
