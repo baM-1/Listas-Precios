@@ -6,10 +6,11 @@ porcentaje_costos_indirectos = 40  # Porcentaje de costos indirectos
 margen_utilidad = 30               # Porcentaje de margen de utilidad deseado
 margen_utilidad_alto = 40          # Porcentaje de margen de utilidad alto
 margen_utilidad_bajo = 20          # Porcentaje de margen de utilidad bajo
+inflacion = .09                    # Inflación 9%
 
 precios_resina_usd = {
-    'PET': 1.69,      # Precio en USD/kg
-    'PP': 1.70        # Precio en USD/kg
+    'PET': 1.70,      # Precio en USD/kg
+    'PP': 1.71        # Precio en USD/kg
 }
 
 # Leer el archivo de Excel
@@ -70,6 +71,8 @@ def calcular_costo_y_precio(row):
     precio_venta_20 = costo_total / (1 - (margen_utilidad_bajo / 100))
     precio_venta_30 = costo_total / (1 - (margen_utilidad / 100))
     precio_venta_40 = costo_total / (1 - (margen_utilidad_alto / 100))
+    precio_2025 = costo_total / (1 - (margen_utilidad_alto / 100) * inflacion)
+    
     
     # Resultados detallados
     resultado = {
@@ -82,7 +85,9 @@ def calcular_costo_y_precio(row):
         'Costo Total': costo_total,
         'Precio Venta (30%)': precio_venta_30,
         'Precio Venta (20%)': precio_venta_20,
-        'Precio Venta (40%)': precio_venta_40
+        'Precio Venta (40%)': precio_venta_40,
+        'Precio 2025 (9%)' : precio_2025
+
     }
     
     return resultado
@@ -99,7 +104,7 @@ for index, row in df_productos.iterrows():
 df_resultados = pd.DataFrame(resultados)
 
 # Exportar los resultados a un nuevo archivo de Excel
-df_resultados.to_excel('resultados_productos.xlsx', index=False)
+df_resultados.to_excel('Lista-Precios-PYTH.xlsx', index=False)
 
 # Mostrar los resultados
 print(df_resultados)
